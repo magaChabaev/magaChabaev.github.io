@@ -63,12 +63,18 @@ const newsService = (function () {
   return {
     topHeadlines(country = "ua", cb) {
       http.get(
-        `${apiUrl}/top-headlines?country=${country}&category=technology&apiKey=${apiKey}`,
+        `${apiUrl}/top-headlines?country=${country}&apiKey=${apiKey}`,
         cb
       );
     },
     everything(query, cb) {
       http.get(`${apiUrl}/everything?q=${query}&apiKey=${apiKey}`, cb);
+    },
+    category(country, categ, cb) {
+      http.get(
+        `${apiUrl}/top-headlines?country=${country}&category=${categ}&apiKey=${apiKey}`,
+        cb
+      );
     },
   };
 })();
@@ -77,6 +83,7 @@ const newsService = (function () {
 const form = document.forms["newsControls"];
 const countrySelect = form.elements["country"];
 const searchInput = form.elements["search"];
+const categoryInput = form.elements["category"];
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -95,14 +102,18 @@ function loadNews() {
 
   const country = countrySelect.value;
   const searchText = searchInput.value;
-
+  const categoryText = categoryInput.value;
+  if (!categoryText) {
+    newsService.topHeadlines(country, onGetResponse);
+  } else {
+    newsService.category(country, categoryText, onGetResponse);
+  }
   if (!searchText) {
     newsService.topHeadlines(country, onGetResponse);
   } else {
     newsService.everything(searchText, onGetResponse);
   }
 }
-
 // Function on get response from server
 function onGetResponse(err, res) {
   removePreloader();
